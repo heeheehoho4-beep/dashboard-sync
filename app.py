@@ -243,6 +243,32 @@ def load_gsheets_data():
         sheets = {}
         for ws in sh.worksheets():
             name = ws.title
+            
+            # [NEW] 에셋 (PDF/이미지) 동기화 처리
+            if name == "system_assets":
+                assets_data = ws.get_all_values()
+                if assets_data:
+                    import base64
+                    import glob
+                    os.makedirs("assets", exist_ok=True)
+                    
+                    # 기존 캐시된 schedule 파일들 먼저 삭제 (오래된 깃허브 파일이나 지난달 파일)
+                    for old_file in glob.glob(os.path.join("assets", "schedule*")):
+                        try: os.remove(old_file)
+                        except: pass
+                        
+                    for row in assets_data:
+                        if not row or not row[0]: continue
+                        fname = row[0]
+                        # 빈 셀 제거 후 이어붙이기
+                        b64_str = "".join([chunk for chunk in row[1:] if chunk])
+                        try:
+                            with open(os.path.join("assets", fname), "wb") as f:
+                                f.write(base64.b64decode(b64_str))
+                        except Exception as e:
+                            print(f"Error decoding asset {fname}: {e}")
+                continue
+                
             if name not in EXCLUDE_SHEETS:
                 data = ws.get_all_values()
                 if data:
@@ -371,7 +397,7 @@ def render_login():
 # ─────────────────────────────────────────────────────────────
 def render_dashboard():
     # 상단 헤더
-    col1, col2, col3 = st.columns([6, 2, 1])
+    col1, col2, col3 = st.columns([6, 2, 2])
     with col1:
         st.markdown(f"<h2 style='color:#4A90D9; margin-bottom:0;'>📋 생보 위촉일정 조회 시스템</h2>", unsafe_allow_html=True)
         if st.session_state.user_dept == "ALL":
@@ -379,6 +405,9 @@ def render_dashboard():
         else:
             st.markdown(f"<p style='color:#888; margin-top:4px;'>👤 {st.session_state.user_name} | 🏢 {st.session_state.user_dept}</p>", unsafe_allow_html=True)
     with col3:
+        if st.button("🔄 새로고침"):
+            st.cache_data.clear()
+            st.rerun()
         if st.button("로그아웃"):
             st.session_state.logged_in = False
             st.rerun()
@@ -494,36 +523,57 @@ def render_dashboard():
             """, unsafe_allow_html=True)
 
     # -------------------------------------------------------------
-    # 탭 2: 당월 위촉일정 안내 (PDF)
+    # 탭 2: 당월 위촉일정 안내
     # -------------------------------------------------------------
     with tab2:
+        import glob
+        
         pdf_path = os.path.join("assets", "schedule.pdf")
-        if os.path.exists(pdf_path):
-            with open(pdf_path, "rb") as f:
-                pdf_bytes = f.read()
-                
+        has_pdf = os.path.exists(pdf_path)
+        
+        # 이미지 파일들 찾기 (schedule 로 시작하는 png, jpg, jpeg)
+        image_files = []
+        for ext in ('*.png', '*.jpg', '*.jpeg'):
+            image_files.extend(glob.glob(os.path.join("assets", f"schedule{ext}")))
+        image_files.sort()  # 이름순 정렬 (schedule1.jpg, schedule2.jpg ...)
+        
+        if has_pdf or image_files:
             col_t, col_b = st.columns([4, 1])
             with col_t:
                 st.markdown("### 📎 당월 위촉일정 안내")
-            with col_b:
-                # 상단 여백 조정을 위해 div 사용
-                st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
-                st.download_button(
-                    label="📥 PDF 다운로드",
-                    data=pdf_bytes,
-                    file_name="위촉일정안내.pdf",
-                    mime="application/pdf",
-                    type="primary",
-                    key="download_schedule",
-                    use_container_width=True
-                )
+                if has_pdf and not image_files:
+                    st.info("💡 클라우드 환경에서는 브라우저 보안 정책으로 인해 PDF 미리보기가 보이지 않을 수 있습니다. 우측 상단의 **[📥 PDF 다운로드]** 버튼을 눌러 확인해 주세요.")
             
-            import base64
-            base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
-            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" type="application/pdf" style="border:1px solid #ccc; border-radius:8px; margin-top:10px;"></iframe>'
-            st.markdown(pdf_display, unsafe_allow_html=True)
+            with col_b:
+                if has_pdf:
+                    st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+                    with open(pdf_path, "rb") as f:
+                        pdf_bytes = f.read()
+                    st.download_button(
+                        label="📥 PDF 다운로드",
+                        data=pdf_bytes,
+                        file_name="위촉일정안내.pdf",
+                        mime="application/pdf",
+                        type="primary",
+                        key="download_schedule",
+                        use_container_width=True
+                    )
+            
+            # 이미지 파일이 있으면 이미지들을 세로로 쭉 렌더링
+            if image_files:
+                st.markdown("<br>", unsafe_allow_html=True)
+                for img_path in image_files:
+                    st.image(img_path, use_container_width=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+            
+            # 이미지가 없고 PDF만 있으면 기존의 iframe 미리보기 (로컬 환경 등 보이는 환경을 위해)
+            elif has_pdf:
+                import base64
+                base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" type="application/pdf" style="border:1px solid #ccc; border-radius:8px; margin-top:10px;"></iframe>'
+                st.markdown(pdf_display, unsafe_allow_html=True)
         else:
-            st.info("💡 등록된 당월 위촉일정 안내문이 없습니다. (assets/schedule.pdf 파일을 추가해주세요)")
+            st.info("💡 등록된 당월 위촉일정 안내문이 없습니다. (assets 폴더에 schedule.pdf 또는 schedule1.jpg 파일을 추가해주세요)")
 
     # -------------------------------------------------------------
     # 탭 3: 보험사별 유의사항 (엑셀 notice 시트 연동)
@@ -628,7 +678,9 @@ def render_dashboard():
                 if not req_dept.strip() or not req_name.strip() or not req_companies:
                     st.error("⚠️ 소속명, 대상자 이름, 그리고 보험사(최소 1개)는 필수 입력 사항입니다.")
                 else:
-                    req_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    from datetime import datetime, timezone, timedelta
+                    kst = timezone(timedelta(hours=9))
+                    req_date = datetime.now(kst).strftime("%Y-%m-%d %H:%M:%S")
                     new_rows = []
                     
                     # 선택한 보험사별로 각각 행(Row) 생성
