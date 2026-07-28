@@ -225,6 +225,11 @@ def load_gsheets_data():
             return None, "Streamlit Secrets에 gcp_service_account가 설정되지 않았습니다."
             
         creds_dict = dict(st.secrets["gcp_service_account"])
+        
+        # TOML 파싱 중 \n 이 이스케이프 문자 그대로 들어간 경우를 위한 안전 장치
+        if "private_key" in creds_dict:
+            creds_dict["private_key"] = creds_dict["private_key"].replace('\\n', '\n')
+            
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive"
