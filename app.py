@@ -242,41 +242,45 @@ def load_gsheets_data():
         sh = client.open_by_url(spreadsheet_url)
         
         sheets = {}
-        for ws in sh.worksheets():
-            name = ws.title
+        all_worksheets = sh.worksheets()
+        
+        # 가져올 시트 이름 목록 구성 (에셋 시트 포함, 제외 시트 제외)
+        target_sheets = [ws.title for ws in all_worksheets if ws.title == "system_assets" or ws.title not in EXCLUDE_SHEETS]
+        
+        if target_sheets:
+            # 단 1번의 API 호출로 모든 시트의 데이터를 싹 가져옴 (Quota Exceeded 방지)
+            batch_data = sh.values_batch_get(target_sheets)
             
-            # [NEW] 에셋 (PDF/이미지) 동기화 처리
-            if name == "system_assets":
-                assets_data = ws.get_all_values()
-                if assets_data:
-                    import base64
-                    import glob
-                    os.makedirs("assets", exist_ok=True)
-                    
-                    # 기존 캐시된 schedule 파일들 먼저 삭제 (오래된 깃허브 파일이나 지난달 파일)
-                    for old_file in glob.glob(os.path.join("assets", "schedule*")):
-                        try: os.remove(old_file)
-                        except: pass
-                        
-                    for row in assets_data:
-                        if not row or not row[0]: continue
-                        fname = row[0]
-                        # 빈 셀 제거 후 이어붙이기
-                        b64_str = "".join([chunk for chunk in row[1:] if chunk])
-                        try:
-                            with open(os.path.join("assets", fname), "wb") as f:
-                                f.write(base64.b64decode(b64_str))
-                        except Exception as e:
-                            print(f"Error decoding asset {fname}: {e}")
-                continue
+            for i, sheet_name in enumerate(target_sheets):
+                range_data = batch_data['valueRanges'][i]
+                data = range_data.get('values', [])
                 
-            if name not in EXCLUDE_SHEETS:
-                data = ws.get_all_values()
-                if data:
-                    sheets[name] = pd.DataFrame(data)
+                if sheet_name == "system_assets":
+                    if data:
+                        import base64
+                        import glob
+                        os.makedirs("assets", exist_ok=True)
+                        
+                        # 기존 캐시된 schedule 파일들 먼저 삭제
+                        for old_file in glob.glob(os.path.join("assets", "schedule*")):
+                            try: os.remove(old_file)
+                            except: pass
+                            
+                        for row in data:
+                            if not row or not row[0]: continue
+                            fname = row[0]
+                            b64_str = "".join([chunk for chunk in row[1:] if chunk])
+                            try:
+                                with open(os.path.join("assets", fname), "wb") as f:
+                                    f.write(base64.b64decode(b64_str))
+                            except Exception as e:
+                                print(f"Error decoding asset {fname}: {e}")
                 else:
-                    sheets[name] = pd.DataFrame()
-                    
+                    if data:
+                        sheets[sheet_name] = pd.DataFrame(data)
+                    else:
+                        sheets[sheet_name] = pd.DataFrame()
+                        
         return sheets, None
     except Exception as e:
         import traceback
