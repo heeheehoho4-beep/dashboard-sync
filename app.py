@@ -679,7 +679,6 @@ def render_dashboard():
                 if not req_dept.strip() or not req_name.strip() or not req_companies:
                     st.error("⚠️ 소속명, 대상자 이름, 그리고 보험사(최소 1개)는 필수 입력 사항입니다.")
                 else:
-                    from datetime import datetime, timezone, timedelta
                     kst = timezone(timedelta(hours=9))
                     req_date = datetime.now(kst).strftime("%Y-%m-%d %H:%M:%S")
                     new_rows = []
