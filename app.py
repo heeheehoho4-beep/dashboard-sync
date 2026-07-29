@@ -832,7 +832,8 @@ def render_dashboard():
 <div style="display:flex; flex-direction:column; gap:10px;">
     <div><b>🖥️ 매일 아침 출근 시</b> : 지원센터 원드라이브-자동동기화로봇_실행 더블클릭 후 까만 창 (-)눌러 최소화 유지<br>
     <span style="color:#e74c3c; font-size:13px; margin-left:145px;">(x)로 닫으면 동기화가 되지 않아요.</span></div>
-    <div><b>🔄 즉시 동기화(필요시)</b> : 지원센터 원드라이브- 수동동기화_즉시실행 더블클릭</div>
+    <div><b>🔄 즉시 동기화(필요시)</b> : 지원센터 원드라이브- 수동동기화_즉시실행 더블클릭<br>
+    <span style="color:#e74c3c; font-size:13px; margin-left:145px;">(보험사별 위촉접수후 한번씩 눌러주세요)</span></div>
     <div><b>🖼️ 등록일정 교체 방법 (매월)</b> : <code>assets</code> 폴더 내 이미지 교체 → 수동동기화 → 웹사이트 새로고침</div>
     <div><b>📋 추가요청 대상자 확인 전</b> : 반드시 사이트 상단 <b>[🔄 새로고침]</b> 버튼을 먼저 눌러 최신 데이터 갱신후 작업하기</div>
 </div>
