@@ -823,41 +823,18 @@ def render_dashboard():
             st.markdown("---")
             st.markdown("#### ☁️ 관리자 운영 가이드")
             st.markdown("""
-<div style="background: linear-gradient(135deg, #667eea22, #764ba222); border: 1px solid #667eea55; border-radius: 12px; padding: 20px;">
+<div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; font-size: 14px; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+<h5 style="margin-top:0; color:#2c3e50; font-size:15px; font-weight:600;">📌 이 웹사이트는 어떻게 운영되나요?</h5>
+<p style="margin-bottom:12px; line-height:1.4;">원드라이브 엑셀 파일 → 동기화 프로그램 → 구글 시트 → 웹사이트 순으로 데이터가 연결됩니다.<br>웹사이트가 직접 엑셀 파일을 가져올 수 없으므로, <b>지원센터 원드라이브에서 동기화 프로그램을 실행</b>해 주어야 합니다.</p>
 
-**📌 이 웹사이트는 어떻게 운영되나요?**
+<hr style="margin: 10px 0; border-top: 1px solid #ced4da;">
 
-원드라이브 엑셀 파일 → 동기화 프로그램 → 구글 시트 → 웹사이트 순으로 데이터가 연결됩니다.
-웹사이트가 직접 엑셀 파일을 가져올 수 없으므로, **담당자 PC에서 동기화 프로그램을 실행**해 주어야 합니다.
-
----
-
-**🖥️ 매일 아침 출근 시 (담당자 PC)**
-
-원드라이브 폴더에 있는 **`자동동기화로봇_실행.bat`** 을 더블클릭 → 까만 창이 뜨면 **최소화(-)** 해두기
-
-> ⚠️ 이 창을 닫으면 자동 동기화가 멈춥니다. 퇴근 전까지 열어두세요.
-
----
-
-**🔄 수동으로 즉시 동기화가 필요할 때**
-
-원드라이브 폴더에 있는 **`수동동기화_즉시실행.bat`** 을 더블클릭
-→ 엑셀 데이터 + 이미지 파일이 즉시 웹사이트에 반영됩니다.
-
----
-
-**🖼️ 등록일정 이미지 교체하는 법 (매월)**
-1. 원드라이브 폴더 안 **`assets`** 폴더에 새 이미지 파일 덮어쓰기
-2. **`수동동기화_즉시실행.bat`** 실행
-3. 웹사이트 상단 **[🔄 새로고침]** 클릭
-
----
-
-**📋 대상자 추가 요청 목록 확인 전**
-
-반드시 상단의 **[🔄 새로고침]** 버튼을 먼저 눌러 최신 접수 목록을 불러온 후 확인하세요.
-
+<div style="display:flex; flex-direction:column; gap:8px;">
+    <div><b>🖥️ 매일 아침 출근 시</b> : <code>자동동기화로봇_실행.bat</code> 더블클릭 후 창 최소화(-) 유지</div>
+    <div><b>🔄 수동 즉시 동기화(필요시)</b> : <code>수동동기화_즉시실행.bat</code> 클릭</div>
+    <div><b>🖼️ 등록일정 교체 방법 (매월)</b> : <code>assets</code> 폴더 내 이미지 교체 → 수동동기화 → 웹사이트 새로고침</div>
+    <div><b>📋 추가요청 대상자 확인 전</b> : 반드시 상단 <b>[🔄 새로고침]</b> 버튼을 먼저 눌러 최신 데이터 갱신</div>
+</div>
 </div>
 """, unsafe_allow_html=True)
 
