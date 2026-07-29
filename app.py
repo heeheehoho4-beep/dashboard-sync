@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import os
 import time
-from datetime import datetime
+import base64
+from datetime import datetime, timezone, timedelta
 
 # ─────────────────────────────────────────────────────────────
 #  설정 (본인 환경에 맞게 수정하세요)
@@ -297,7 +298,7 @@ def search_all_sheets(sheets: dict, keyword: str, user_dept: str, target_compani
     keyword_lower = keyword.strip().lower()
 
     for sheet_name, df in sheets.items():
-        if sheet_name == "notice":
+        if sheet_name in ["notice", "requests", "system_assets"]:
             continue
             
         if target_companies and sheet_name not in target_companies:
