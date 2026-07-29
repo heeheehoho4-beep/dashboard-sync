@@ -695,15 +695,29 @@ def render_dashboard():
                             "상태": "신규"
                         })
                     
-                    new_req_df = pd.DataFrame(new_rows)
-                    csv_path = os.path.join("assets", "추가요청목록.csv")
-                    
-                    if os.path.exists(csv_path):
-                        new_req_df.to_csv(csv_path, mode='a', header=False, index=False, encoding='utf-8-sig')
-                    else:
-                        new_req_df.to_csv(csv_path, mode='w', header=True, index=False, encoding='utf-8-sig')
-                    
-                    st.success("✅ 추가접수 요청하였습니다.")
+                    try:
+                        import gspread
+                        from google.oauth2.service_account import Credentials
+                        creds_dict = dict(st.secrets["gcp_service_account"])
+                        if "private_key" in creds_dict: creds_dict["private_key"] = creds_dict["private_key"].replace('\\n', '\n')
+                        scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+                        credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+                        client = gspread.authorize(credentials)
+                        spreadsheet_url = "https://docs.google.com/spreadsheets/d/1jWwDgw0rEGeb0R4_d1UsfOnXsfwbOjtu9BBiPTZ16p0/edit?gid=0#gid=0"
+                        sh = client.open_by_url(spreadsheet_url)
+                        
+                        try:
+                            ws_req = sh.worksheet("requests")
+                        except gspread.exceptions.WorksheetNotFound:
+                            ws_req = sh.add_worksheet(title="requests", rows="100", cols="10")
+                            ws_req.append_row(["소속명", "대상자사번", "이름", "보험사", "요청내용", "요청일시", "상태"])
+                        
+                        rows_to_append = [list(row.values()) for row in new_rows]
+                        ws_req.append_rows(rows_to_append)
+                        st.success(f"✅ 총 {len(new_rows)}건의 추가접수 요청이 구글 시트에 안전하게 전송되었습니다!")
+                        st.cache_data.clear() # 관리자 탭에 즉시 반영되도록 캐시 초기화
+                    except Exception as e:
+                        st.error(f"요청 저장 중 오류가 발생했습니다: {e}")
 
     # -------------------------------------------------------------
     # 탭 5: 관리자 전용 (admin 권한만 보임)
@@ -711,10 +725,16 @@ def render_dashboard():
     if st.session_state.user_role == "admin":
         with tab5:
             st.markdown("### 👑 관리자 전용: 접수된 추가 요청 목록")
-            csv_path = os.path.join("assets", "추가요청목록.csv")
+            req_df_raw = sheets.get("requests")
             
-            if os.path.exists(csv_path):
-                req_df = pd.read_csv(csv_path, encoding='utf-8-sig')
+            if req_df_raw is not None and not req_df_raw.empty:
+                req_df = req_df_raw.copy()
+                req_df.columns = req_df.iloc[0]
+                req_df = req_df[1:].reset_index(drop=True)
+                
+                # '상태' 열이 없는 예외 상황 대비
+                if "상태" not in req_df.columns:
+                    req_df["상태"] = "신규"
                 
                 # 현재 '신규' (대기 중) 상태인 요청들 중에서만 보험사 목록 추출
                 pending_companies = req_df[req_df["상태"] == "신규"]["보험사"].dropna().unique().tolist()
@@ -732,8 +752,9 @@ def render_dashboard():
                 else:
                     filtered_df = req_df
                 
-                # 정렬
-                filtered_df = filtered_df.sort_values(by="요청일시", ascending=False)
+                # 정렬 (최신순)
+                if "요청일시" in filtered_df.columns:
+                    filtered_df = filtered_df.sort_values(by="요청일시", ascending=False)
                 
                 # 상태별 데이터 분리
                 pending_df = filtered_df[filtered_df["상태"] == "신규"]
@@ -749,11 +770,24 @@ def render_dashboard():
                     # 다운로드 버튼 클릭 시 상태 업데이트 콜백
                     def mark_as_downloaded(indices_to_update):
                         try:
-                            df = pd.read_csv(csv_path, encoding='utf-8-sig')
-                            df.loc[indices_to_update, "상태"] = "다운로드 완료"
-                            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+                            import gspread
+                            from google.oauth2.service_account import Credentials
+                            creds_dict = dict(st.secrets["gcp_service_account"])
+                            if "private_key" in creds_dict: creds_dict["private_key"] = creds_dict["private_key"].replace('\\n', '\n')
+                            scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+                            credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+                            client = gspread.authorize(credentials)
+                            sh = client.open_by_url("https://docs.google.com/spreadsheets/d/1jWwDgw0rEGeb0R4_d1UsfOnXsfwbOjtu9BBiPTZ16p0/edit?gid=0#gid=0")
+                            ws_req = sh.worksheet("requests")
+                            
+                            cells_to_update = []
+                            for idx in indices_to_update:
+                                # pandas index는 0부터 시작, 헤더는 1행, 데이터 시작은 2행이므로 + 2
+                                cells_to_update.append(gspread.Cell(row=idx + 2, col=7, value="다운로드 완료"))
+                            ws_req.update_cells(cells_to_update)
+                            st.cache_data.clear() # 캐시 갱신
                         except Exception as e:
-                            pass
+                            print(f"다운로드 상태 변경 에러: {e}")
                             
                     # 다운로드할 데이터 준비 (신규 요청만)
                     csv_bytes = pending_df.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig')
