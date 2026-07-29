@@ -568,7 +568,10 @@ def render_dashboard():
             if image_files:
                 st.markdown("<br>", unsafe_allow_html=True)
                 for img_path in image_files:
-                    st.image(img_path, use_container_width=True)
+                    # 데스크톱에서는 이미지가 너무 커지지 않게 중앙 정렬 및 너비 제한
+                    img_col1, img_col2, img_col3 = st.columns([1, 3, 1])
+                    with img_col2:
+                        st.image(img_path, use_container_width=True)
                     st.markdown("<br>", unsafe_allow_html=True)
             
             # 이미지가 없고 PDF만 있으면 기존의 iframe 미리보기 (로컬 환경 등 보이는 환경을 위해)
@@ -881,8 +884,6 @@ def main():
             border: 1px solid #e0e0e0;
             border-radius: 12px;
             padding: 24px;
-            background: white;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
         /* 탭 버튼 직관적으로 스타일링 */
         button[data-baseweb="tab"] {
