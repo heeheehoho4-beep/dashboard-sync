@@ -821,26 +821,9 @@ def render_dashboard():
                 st.info("아직 접수된 대상자 추가 요청이 없습니다.")
                 
             st.markdown("---")
-            st.markdown("#### ☁️ 클라우드 서버 실시간 동기화")
-            st.success("🤖 **자동 감시가 실행 중입니다.** 엑셀 파일을 저장(Ctrl+S)하면 약 10~20초 뒤 구글 시트로 자동 전송됩니다.")
-            st.info("💡 (수동 동기화) 원하신다면 아래 버튼을 눌러 지금 즉시 강제로 전송할 수도 있습니다.")
-            
-            if st.button("🚀 엑셀 데이터 구글 시트로 덮어쓰기 (동기화 실행)", type="primary", use_container_width=True):
-                with st.spinner("구글 스프레드시트로 데이터를 전송하고 있습니다... (데이터 양에 따라 최대 1분 소요)"):
-                    try:
-                        import sync_to_gsheets
-                        
-                        json_file = "dashboard-sync-503805-3ac60a044531.json"
-                        gsheet_url = "https://docs.google.com/spreadsheets/d/1jWwDgw0rEGeb0R4_d1UsfOnXsfwbOjtu9BBiPTZ16p0/edit?gid=0#gid=0"
-                        
-                        success, msg = sync_to_gsheets.sync_excel_to_gsheets(EXCEL_PATH, json_file, gsheet_url)
-                        if success:
-                            st.success(msg)
-                            st.balloons()
-                        else:
-                            st.error(msg)
-                    except Exception as e:
-                        st.error(f"동기화 실행 중 오류가 발생했습니다: {str(e)}")
+            st.markdown("---")
+            st.markdown("#### ☁️ 클라우드 서버 실시간 동기화 안내")
+            st.info("💡 클라우드 서버(현재 접속하신 이 웹사이트)에서는 보안상 질문자님 PC의 엑셀 파일을 직접 가져올 수 없습니다.\n\n**데이터를 최신으로 동기화하시려면 반드시 질문자님 PC(엑셀이 있는 컴퓨터)에서 자동 동기화 프로그램(`sync_to_gsheets.py`)을 켜두시거나 실행시켜 주셔야 합니다!**")
 
 
 # ─────────────────────────────────────────────────────────────
