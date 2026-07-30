@@ -889,9 +889,19 @@ def main():
     # 커스텀 CSS
     st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        html, body, [class*="css"] {
-            font-family: 'Noto Sans KR', sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        
+        /* 전체 기본 폰트 (고운 돋움 적용 - 모바일 완벽 호환) */
+        html, body, [class*="css"], p, span, div, li, a {
+            font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif !important;
+        }
+        
+        /* 큰 제목(h1~h4)은 가독성과 무게감을 위해 기존 폰트 유지 */
+        h1, h2, h3, h4, th,
+        [data-testid="stMarkdownContainer"] h1, 
+        [data-testid="stMarkdownContainer"] h2, 
+        [data-testid="stMarkdownContainer"] h3 {
+            font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
         }
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
