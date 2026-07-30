@@ -406,15 +406,15 @@ def render_dashboard():
     with col1:
         st.markdown("""
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
         </style>
-        <h1 style='color:#4A90D9; margin-bottom:2px; font-size: 34px; font-weight: 800; letter-spacing: -1px;'>
+        <h1 style='color:#4A90D9; margin-bottom:0px; padding-bottom:0px; line-height:1.1; font-size: 34px; font-weight: 800; letter-spacing: -1px;'>
             🚀 생보 위촉일정 조회 및 재접수 요청 시스템
         </h1>
-        <p style='color:#555; margin-top:0px; margin-bottom:2px; margin-left:36px; font-size: 18px; font-family: "Jua", sans-serif; letter-spacing: 0.5px;'>
-            ✔️ <b style='color:#4A90D9;'>메신저 확인은 그만!</b> 내 손으로 직접 보는 실시간 접수 현황
+        <p style='color:#555; margin-top:6px; margin-bottom:2px; margin-left:36px; font-size: 15px; font-family: "Gowun Dodum", sans-serif; letter-spacing: 0px;'>
+            ✔️ <b style='color:#4A90D9;'>메신저 확인은 그만!</b> 내가 직접 확인하는 실시간 접수 현황
         </p>
-        <p style='color:#555; margin-top:0px; margin-bottom:16px; margin-left:36px; font-size: 18px; font-family: "Jua", sans-serif; letter-spacing: 0.5px;'>
+        <p style='color:#555; margin-top:0px; margin-bottom:16px; margin-left:36px; font-size: 15px; font-family: "Gowun Dodum", sans-serif; letter-spacing: 0px;'>
             ✔️ <b style='color:#4A90D9;'>모바일위촉보험사 재접수도</b> 클릭 몇번으로 간편하게
         </p>
         """, unsafe_allow_html=True)
