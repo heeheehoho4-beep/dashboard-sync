@@ -891,13 +891,21 @@ def main():
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
         
-        /* 전체 기본 폰트 (고운 돋움 적용 - 모바일 완벽 호환) */
-        html, body, [class*="css"], p, span, div, li, a {
+        /* 전체 기본 폰트 (고운 돋움 적용) */
+        html, body, p, li, a, button, label, input, th, td {
+            font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif !important;
+        }
+        div[data-testid="stMarkdownContainer"] {
             font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif !important;
         }
         
+        /* 스트림릿 기본 아이콘(Material Symbols) 깨짐 방지 */
+        span, i, svg {
+            font-family: inherit;
+        }
+        
         /* 큰 제목(h1~h4)은 가독성과 무게감을 위해 기존 폰트 유지 */
-        h1, h2, h3, h4, th,
+        h1, h2, h3, h4,
         [data-testid="stMarkdownContainer"] h1, 
         [data-testid="stMarkdownContainer"] h2, 
         [data-testid="stMarkdownContainer"] h3 {
