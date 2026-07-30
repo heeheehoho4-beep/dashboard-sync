@@ -721,7 +721,14 @@ def render_dashboard():
                         
                         rows_to_append = [list(row.values()) for row in new_rows]
                         ws_req.append_rows(rows_to_append)
-                        st.success(f"✅ 총 {len(new_rows)}건의 추가접수 요청이 구글 시트에 안전하게 전송되었습니다!")
+                        st.success(f"✅ 총 {len(new_rows)}건의 추가접수 요청이 위촉담당자에게 전송되었습니다. 이후 돌아오는 일정에 추가될 예정입니다.")
+                        st.markdown("""
+<div style="font-size:14px; color:#444; padding:15px; background-color:#f1f3f5; border-radius:8px; border-left:4px solid #4A90D9; margin-bottom:15px;">
+• 외국인, 본인인증불가자 중 모바일로 위촉불가능한 회사는 서면 위촉서류 원본을 지원센터로 보내주세요<br>
+• 최초 및 3회까지는 자동으로 재접수되니 입력하지 않으셔도 됩니다.<br>
+• 당월보험사별 위촉일정 시트에서 금일 이후 돌아오는 서류마감(FA)의 url 발송일정 및 위촉예정일을 FA님께도 공유해주시기 바랍니다.
+</div>
+""", unsafe_allow_html=True)
                         st.cache_data.clear() # 관리자 탭에 즉시 반영되도록 캐시 초기화
                     except Exception as e:
                         st.error(f"요청 저장 중 오류가 발생했습니다: {e}")
@@ -765,7 +772,12 @@ def render_dashboard():
                 
                 # 상태별 데이터 분리
                 pending_df = filtered_df[filtered_df["상태"] == "신규"]
-                completed_df = filtered_df[filtered_df["상태"] == "다운로드 완료"]
+                
+                # 과거 완료 내역은 당월 및 전월(1개월 전)까지만 표시
+                from dateutil.relativedelta import relativedelta
+                kst = timezone(timedelta(hours=9))
+                limit_date_str = (datetime.now(kst) - relativedelta(months=1)).strftime("%Y-%m-01 00:00:00")
+                completed_df = filtered_df[(filtered_df["상태"] == "다운로드 완료") & (filtered_df["요청일시"] >= limit_date_str)]
                 
                 # 1. 미처리 신규 요청 영역
                 st.markdown("#### 🚨 미처리 신규 요청")
