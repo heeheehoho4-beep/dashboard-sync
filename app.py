@@ -375,7 +375,7 @@ def render_login():
         <div style="width:100%; max-width:440px;">
     """, unsafe_allow_html=True)
 
-    st.markdown("<h1 style='text-align:center; color:#4A90D9; margin-bottom:8px; font-size: 28px; font-weight: bold;'>🔐 생보 위촉일정 조회 및 재접수 요청</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center; color:#4A90D9; margin-bottom:8px; font-size: 28px; font-weight: bold;'>🔐 생보 위촉일정 조회 및 재접수 요청 시스템</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; color:#888; margin-bottom:32px;'>권한이 있는 사용자만 접근할 수 있습니다.</p>", unsafe_allow_html=True)
 
     with st.form("login_form"):
@@ -406,24 +406,26 @@ def render_dashboard():
     with col1:
         st.markdown("""
         <h1 style='color:#4A90D9; margin-bottom:10px; font-size: 34px; font-weight: 800; letter-spacing: -1px;'>
-            🚀 생보 위촉일정 조회 및 재접수 요청
+            🚀 생보 위촉일정 조회 및 재접수 요청 시스템
         </h1>
-        <p style='color:#555; margin-bottom:4px; font-size: 16px; letter-spacing: -0.5px;'>
+        <p style='color:#555; margin-bottom:4px; margin-left:36px; font-size: 16px; letter-spacing: -0.5px;'>
             ✔️ <b>메신저 확인은 그만!</b> 내 손으로 직접 보는 실시간 접수 현황
         </p>
-        <p style='color:#555; margin-bottom:16px; font-size: 16px; letter-spacing: -0.5px;'>
+        <p style='color:#555; margin-bottom:16px; margin-left:36px; font-size: 16px; letter-spacing: -0.5px;'>
             ✔️ <b>모바일위촉보험사 재접수도</b> 클릭 몇번으로 간편하게
         </p>
         """, unsafe_allow_html=True)
-        if st.session_state.user_dept == "ALL":
-            st.markdown(f"<p style='color:#888; margin-top:4px;'>👤 {st.session_state.user_name}</p>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<p style='color:#888; margin-top:4px;'>👤 {st.session_state.user_name} | 🏢 {st.session_state.user_dept}</p>", unsafe_allow_html=True)
+        
     with col3:
-        if st.button("🔄 새로고침"):
+        if st.session_state.user_dept == "ALL":
+            st.markdown(f"<p style='color:#888; text-align:right; margin-top:10px; margin-bottom:10px; font-size:14px;'>👤 <b>{st.session_state.user_name}</b></p>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<p style='color:#888; text-align:right; margin-top:10px; margin-bottom:10px; font-size:14px;'>👤 <b>{st.session_state.user_name}</b> | 🏢 {st.session_state.user_dept}</p>", unsafe_allow_html=True)
+            
+        if st.button("🔄 새로고침", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
-        if st.button("로그아웃"):
+        if st.button("로그아웃", use_container_width=True):
             st.session_state.logged_in = False
             st.rerun()
 
