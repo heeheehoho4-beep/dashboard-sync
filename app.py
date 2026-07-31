@@ -453,11 +453,11 @@ def render_dashboard():
 
     # 탭 생성
     if st.session_state.user_role == "admin":
-        tabs = st.tabs(["🔍 FA별 접수일정 검색", "📎 당월 보험사별 위촉일정", "⚠️ 보험사별 유의사항", "📝 대상자 추가요청", "👑 관리자 전용"])
-        tab1, tab2, tab3, tab4, tab5 = tabs
+        tabs = st.tabs(["🔍 FA별 접수일정 검색", "📎 당월 보험사별 위촉일정", "⚠️ 보험사별 유의사항", "📝 대상자 추가요청", "💻 사전진단 시뮬레이터", "👑 관리자 전용"])
+        tab1, tab2, tab3, tab4, tab_sim, tab5 = tabs
     else:
-        tabs = st.tabs(["🔍 FA별 접수일정 검색", "📎 당월 보험사별 위촉일정", "⚠️ 보험사별 유의사항", "📝 대상자 추가요청"])
-        tab1, tab2, tab3, tab4 = tabs
+        tabs = st.tabs(["🔍 FA별 접수일정 검색", "📎 당월 보험사별 위촉일정", "⚠️ 보험사별 유의사항", "📝 대상자 추가요청", "💻 사전진단 시뮬레이터"])
+        tab1, tab2, tab3, tab4, tab_sim = tabs
 
     # -------------------------------------------------------------
     # 탭 1: 검색
@@ -747,6 +747,26 @@ def render_dashboard():
                         st.cache_data.clear() # 관리자 탭에 즉시 반영되도록 캐시 초기화
                     except Exception as e:
                         st.error(f"요청 저장 중 오류가 발생했습니다: {e}")
+
+    # -------------------------------------------------------------
+    # 탭 시뮬레이터: 사전진단 시뮬레이터
+    # -------------------------------------------------------------
+    with tab_sim:
+        st.markdown("### 💻 위촉 사전 진단 시뮬레이터")
+        st.markdown("지원자 분들의 위촉 가능 여부를 사전에 시뮬레이션 해보실 수 있습니다.")
+        
+        sim_path = os.path.join("assets", "위촉 사전 진단 시뮬레이터_2606_배포용.html")
+        if os.path.exists(sim_path):
+            try:
+                with open(sim_path, "r", encoding="utf-8") as f:
+                    sim_html = f.read()
+                # height 조정 (프로그램 화면 크기에 맞게 필요시 조절)
+                import streamlit.components.v1 as components
+                components.html(sim_html, height=1000, scrolling=True)
+            except Exception as e:
+                st.error(f"시뮬레이터 파일을 불러오는 중 오류가 발생했습니다: {e}")
+        else:
+            st.info("시뮬레이터 파일(위촉 사전 진단 시뮬레이터_2606_배포용.html)이 assets 폴더에 업로드되지 않았습니다.")
 
     # -------------------------------------------------------------
     # 탭 5: 관리자 전용 (admin 권한만 보임)
