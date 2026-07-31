@@ -453,11 +453,11 @@ def render_dashboard():
 
     # 탭 생성
     if st.session_state.user_role == "admin":
-        tabs = st.tabs(["🔍 FA별 접수일정 검색", "📎 당월 보험사별 위촉일정", "⚠️ 보험사별 유의사항", "📝 대상자 추가요청", "💻 사전진단 시뮬레이터", "👑 관리자 전용"])
-        tab1, tab2, tab3, tab4, tab_sim, tab5 = tabs
+        tabs = st.tabs(["🔍 FA별 접수일정 검색", "📎 당월 보험사별 위촉일정", "⚠️ 보험사별 유의사항", "📝 대상자 추가요청", "👑 관리자 전용"])
+        tab1, tab2, tab3, tab4, tab5 = tabs
     else:
-        tabs = st.tabs(["🔍 FA별 접수일정 검색", "📎 당월 보험사별 위촉일정", "⚠️ 보험사별 유의사항", "📝 대상자 추가요청", "💻 사전진단 시뮬레이터"])
-        tab1, tab2, tab3, tab4, tab_sim = tabs
+        tabs = st.tabs(["🔍 FA별 접수일정 검색", "📎 당월 보험사별 위촉일정", "⚠️ 보험사별 유의사항", "📝 대상자 추가요청"])
+        tab1, tab2, tab3, tab4 = tabs
 
     # -------------------------------------------------------------
     # 탭 1: 검색
@@ -578,6 +578,12 @@ def render_dashboard():
                         key="download_schedule",
                         use_container_width=True
                     )
+                else:
+                    st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+                
+                st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+                if st.button("💻 위촉 사전진단 시뮬레이터 바로가기", key="btn_sim_tab2", use_container_width=True):
+                    st.session_state.show_sim_in_tab2 = not st.session_state.get("show_sim_in_tab2", False)
             
             # 이미지 파일이 있으면 이미지들을 세로로 쭉 렌더링
             if image_files:
@@ -597,6 +603,22 @@ def render_dashboard():
                 st.markdown(pdf_display, unsafe_allow_html=True)
         else:
             st.info("💡 등록된 당월 위촉일정 안내문이 없습니다. (assets 폴더에 schedule.pdf 또는 schedule1.jpg 파일을 추가해주세요)")
+
+        # 시뮬레이터 렌더링 영역 (버튼 클릭 시 표시)
+        if st.session_state.get("show_sim_in_tab2", False):
+            st.markdown("---")
+            st.markdown("### 💻 위촉 사전 진단 시뮬레이터")
+            sim_path = os.path.join("assets", "위촉 사전 진단 시뮬레이터_2606_배포용.html")
+            if os.path.exists(sim_path):
+                try:
+                    with open(sim_path, "r", encoding="utf-8") as f:
+                        sim_html = f.read()
+                    import streamlit.components.v1 as components
+                    components.html(sim_html, height=1000, scrolling=True)
+                except Exception as e:
+                    st.error(f"시뮬레이터 로드 오류: {e}")
+            else:
+                st.info("시뮬레이터 파일(위촉 사전 진단 시뮬레이터_2606_배포용.html)이 assets 폴더에 업로드되지 않았습니다.")
 
     # -------------------------------------------------------------
     # 탭 3: 보험사별 유의사항 (엑셀 notice 시트 연동)
@@ -747,26 +769,6 @@ def render_dashboard():
                         st.cache_data.clear() # 관리자 탭에 즉시 반영되도록 캐시 초기화
                     except Exception as e:
                         st.error(f"요청 저장 중 오류가 발생했습니다: {e}")
-
-    # -------------------------------------------------------------
-    # 탭 시뮬레이터: 사전진단 시뮬레이터
-    # -------------------------------------------------------------
-    with tab_sim:
-        st.markdown("### 💻 위촉 사전 진단 시뮬레이터")
-        st.markdown("지원자 분들의 위촉 가능 여부를 사전에 시뮬레이션 해보실 수 있습니다.")
-        
-        sim_path = os.path.join("assets", "위촉 사전 진단 시뮬레이터_2606_배포용.html")
-        if os.path.exists(sim_path):
-            try:
-                with open(sim_path, "r", encoding="utf-8") as f:
-                    sim_html = f.read()
-                # height 조정 (프로그램 화면 크기에 맞게 필요시 조절)
-                import streamlit.components.v1 as components
-                components.html(sim_html, height=1000, scrolling=True)
-            except Exception as e:
-                st.error(f"시뮬레이터 파일을 불러오는 중 오류가 발생했습니다: {e}")
-        else:
-            st.info("시뮬레이터 파일(위촉 사전 진단 시뮬레이터_2606_배포용.html)이 assets 폴더에 업로드되지 않았습니다.")
 
     # -------------------------------------------------------------
     # 탭 5: 관리자 전용 (admin 권한만 보임)
