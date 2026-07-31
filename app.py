@@ -583,27 +583,22 @@ def render_dashboard():
                 
                 st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
                 
-                def toggle_sim():
-                    st.session_state.show_sim_in_tab2 = not st.session_state.get("show_sim_in_tab2", False)
+                @st.dialog("💻 위촉 사전 진단 시뮬레이터", width="large")
+                def show_simulator_dialog():
+                    sim_path = os.path.join("assets", "위촉 사전 진단 시뮬레이터_2606_배포용.html")
+                    if os.path.exists(sim_path):
+                        try:
+                            with open(sim_path, "r", encoding="utf-8") as f:
+                                sim_html = f.read()
+                            import streamlit.components.v1 as components
+                            components.html(sim_html, height=800, scrolling=True)
+                        except Exception as e:
+                            st.error(f"시뮬레이터 로드 오류: {e}")
+                    else:
+                        st.info("시뮬레이터 파일(위촉 사전 진단 시뮬레이터_2606_배포용.html)이 assets 폴더에 업로드되지 않았습니다.")
                 
-                st.button("💻 위촉 사전진단 시뮬레이터 바로가기", key="btn_sim_tab2", type="primary", use_container_width=True, on_click=toggle_sim)
-            
-            # 시뮬레이터 렌더링 영역 (버튼 바로 아래 표시)
-            if st.session_state.get("show_sim_in_tab2", False):
-                st.markdown("---")
-                st.markdown("### 💻 위촉 사전 진단 시뮬레이터")
-                sim_path = os.path.join("assets", "위촉 사전 진단 시뮬레이터_2606_배포용.html")
-                if os.path.exists(sim_path):
-                    try:
-                        with open(sim_path, "r", encoding="utf-8") as f:
-                            sim_html = f.read()
-                        import streamlit.components.v1 as components
-                        components.html(sim_html, height=1000, scrolling=True)
-                    except Exception as e:
-                        st.error(f"시뮬레이터 로드 오류: {e}")
-                else:
-                    st.info("시뮬레이터 파일(위촉 사전 진단 시뮬레이터_2606_배포용.html)이 assets 폴더에 업로드되지 않았습니다.")
-                st.markdown("---")
+                if st.button("💻 위촉 사전진단 시뮬레이터 바로가기", key="btn_sim_tab2", type="primary", use_container_width=True):
+                    show_simulator_dialog()
             
             # 이미지 파일이 있으면 이미지들을 세로로 쭉 렌더링
             if image_files:
