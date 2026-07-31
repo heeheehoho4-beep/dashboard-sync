@@ -581,22 +581,6 @@ def render_dashboard():
                 else:
                     st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
                 
-                # 서면위촉서류 다운로드 버튼
-                doc_path = os.path.join("assets", "(양식)보험사별_서면위촉서류.pdf")
-                if os.path.exists(doc_path):
-                    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-                    with open(doc_path, "rb") as f:
-                        doc_bytes = f.read()
-                    st.download_button(
-                        label="📄 서면위촉서류 다운로드",
-                        data=doc_bytes,
-                        file_name="(양식)보험사별_서면위촉서류.pdf",
-                        mime="application/pdf",
-                        type="primary",
-                        key="download_doc",
-                        use_container_width=True
-                    )
-                
                 st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
                 if st.button("💻 위촉 사전진단 시뮬레이터 바로가기", key="btn_sim_tab2", type="primary", use_container_width=True):
                     st.session_state.show_sim_in_tab2 = not st.session_state.get("show_sim_in_tab2", False)
