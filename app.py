@@ -507,16 +507,8 @@ def render_dashboard():
                     for col in ["URL 동의기한", "위촉예정일", "미위촉시 다음접수일정"]:
                         if col in result_df.columns:
                             result_df[col] = result_df[col].apply(
-                                lambda x: x[:10] if isinstance(x, str) and len(x) >= 10 else x
-                            )
-
-                    st.success(f"✅ {len(results)}개의 접수이력이 검색되었습니다.")
-                    st.markdown("""
-                    <div style="color: #d32f2f; font-size: 13.5px; background-color: #fff5f5; border-left: 4px solid #ef5350; padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; line-height: 1.6;">
-                        <b>1.</b> 코드 확인및 동의결과는 INS에서 해주시기 바랍니다.<br>
-                        <b>2.</b> 재접수횟수를 참고하셔서 2회이상인 보험사가 URL 미제출일 경우 [대상자 추가요청]에 접수해주시기 바랍니다. (자동 재접수는 3회이상 하지 않습니다)<br>
-                        <b>3.</b> 위촉예정일 익일 코드확인 및 사용 가능한 보험사 참조바랍니다.<br>
-                        <span style="color: #c62828; font-size: 12.5px;">&nbsp;&nbsp;&nbsp;&nbsp;(신한라이프, DB생명, 흥국생명, 농협생명, KB라이프, IBK연금보험, 카디프생명)</span>
+                                lambda x: x[:10] if isinstance(x, str) an        else:
+            st.info("💡 등록된 당월 위촉일정 안내문이 없습니다. (assets 폴더에 schedule.pdf 또는 schedule1.jpg 파일을 추가해주세요)")        <span style="color: #c62828; font-size: 12.5px;">&nbsp;&nbsp;&nbsp;&nbsp;(신한라이프, DB생명, 흥국생명, 농협생명, KB라이프, IBK연금보험, 카디프생명)</span>
                     </div>
                     """, unsafe_allow_html=True)
                     st.dataframe(
@@ -582,8 +574,28 @@ def render_dashboard():
                     st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
                 
                 st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-                if st.button("💻 위촉 사전진단 시뮬레이터 바로가기", key="btn_sim_tab2", type="primary", use_container_width=True):
+                
+                def toggle_sim():
                     st.session_state.show_sim_in_tab2 = not st.session_state.get("show_sim_in_tab2", False)
+                
+                st.button("💻 위촉 사전진단 시뮬레이터 바로가기", key="btn_sim_tab2", type="primary", use_container_width=True, on_click=toggle_sim)
+            
+            # 시뮬레이터 렌더링 영역 (버튼 바로 아래 표시)
+            if st.session_state.get("show_sim_in_tab2", False):
+                st.markdown("---")
+                st.markdown("### 💻 위촉 사전 진단 시뮬레이터")
+                sim_path = os.path.join("assets", "위촉 사전 진단 시뮬레이터_2606_배포용.html")
+                if os.path.exists(sim_path):
+                    try:
+                        with open(sim_path, "r", encoding="utf-8") as f:
+                            sim_html = f.read()
+                        import streamlit.components.v1 as components
+                        components.html(sim_html, height=1000, scrolling=True)
+                    except Exception as e:
+                        st.error(f"시뮬레이터 로드 오류: {e}")
+                else:
+                    st.info("시뮬레이터 파일(위촉 사전 진단 시뮬레이터_2606_배포용.html)이 assets 폴더에 업로드되지 않았습니다.")
+                st.markdown("---")
             
             # 이미지 파일이 있으면 이미지들을 세로로 쭉 렌더링
             if image_files:
@@ -604,21 +616,7 @@ def render_dashboard():
         else:
             st.info("💡 등록된 당월 위촉일정 안내문이 없습니다. (assets 폴더에 schedule.pdf 또는 schedule1.jpg 파일을 추가해주세요)")
 
-        # 시뮬레이터 렌더링 영역 (버튼 클릭 시 표시)
-        if st.session_state.get("show_sim_in_tab2", False):
-            st.markdown("---")
-            st.markdown("### 💻 위촉 사전 진단 시뮬레이터")
-            sim_path = os.path.join("assets", "위촉 사전 진단 시뮬레이터_2606_배포용.html")
-            if os.path.exists(sim_path):
-                try:
-                    with open(sim_path, "r", encoding="utf-8") as f:
-                        sim_html = f.read()
-                    import streamlit.components.v1 as components
-                    components.html(sim_html, height=1000, scrolling=True)
-                except Exception as e:
-                    st.error(f"시뮬레이터 로드 오류: {e}")
-            else:
-                st.info("시뮬레이터 파일(위촉 사전 진단 시뮬레이터_2606_배포용.html)이 assets 폴더에 업로드되지 않았습니다.")
+
 
     # -------------------------------------------------------------
     # 탭 3: 보험사별 유의사항 (엑셀 notice 시트 연동)
