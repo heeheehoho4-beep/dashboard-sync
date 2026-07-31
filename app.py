@@ -507,8 +507,16 @@ def render_dashboard():
                     for col in ["URL 동의기한", "위촉예정일", "미위촉시 다음접수일정"]:
                         if col in result_df.columns:
                             result_df[col] = result_df[col].apply(
-                                lambda x: x[:10] if isinstance(x, str) an        else:
-            st.info("💡 등록된 당월 위촉일정 안내문이 없습니다. (assets 폴더에 schedule.pdf 또는 schedule1.jpg 파일을 추가해주세요)")        <span style="color: #c62828; font-size: 12.5px;">&nbsp;&nbsp;&nbsp;&nbsp;(신한라이프, DB생명, 흥국생명, 농협생명, KB라이프, IBK연금보험, 카디프생명)</span>
+                                lambda x: x[:10] if isinstance(x, str) and len(x) >= 10 else x
+                            )
+
+                    st.success(f"✅ {len(results)}개의 접수이력이 검색되었습니다.")
+                    st.markdown("""
+                    <div style="color: #d32f2f; font-size: 13.5px; background-color: #fff5f5; border-left: 4px solid #ef5350; padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; line-height: 1.6;">
+                        <b>1.</b> 코드 확인및 동의결과는 INS에서 해주시기 바랍니다.<br>
+                        <b>2.</b> 재접수횟수를 참고하셔서 2회이상인 보험사가 URL 미제출일 경우 [대상자 추가요청]에 접수해주시기 바랍니다. (자동 재접수는 3회이상 하지 않습니다)<br>
+                        <b>3.</b> 위촉예정일 익일 코드확인 및 사용 가능한 보험사 참조바랍니다.<br>
+                        <span style="color: #c62828; font-size: 12.5px;">&nbsp;&nbsp;&nbsp;&nbsp;(신한라이프, DB생명, 흥국생명, 농협생명, KB라이프, IBK연금보험, 카디프생명)</span>
                     </div>
                     """, unsafe_allow_html=True)
                     st.dataframe(
