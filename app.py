@@ -581,24 +581,7 @@ def render_dashboard():
                 else:
                     st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
                 
-                st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-                
-                @st.dialog("💻 위촉 사전 진단 시뮬레이터", width="large")
-                def show_simulator_dialog():
-                    sim_path = os.path.join("assets", "위촉 사전 진단 시뮬레이터_2606_배포용.html")
-                    if os.path.exists(sim_path):
-                        try:
-                            with open(sim_path, "r", encoding="utf-8") as f:
-                                sim_html = f.read()
-                            import streamlit.components.v1 as components
-                            components.html(sim_html, height=800, scrolling=True)
-                        except Exception as e:
-                            st.error(f"시뮬레이터 로드 오류: {e}")
-                    else:
-                        st.info("시뮬레이터 파일(위촉 사전 진단 시뮬레이터_2606_배포용.html)이 assets 폴더에 업로드되지 않았습니다.")
-                
-                if st.button("💻 위촉 사전진단 시뮬레이터 바로가기", key="btn_sim_tab2", type="primary", use_container_width=True):
-                    show_simulator_dialog()
+
             
             # 이미지 파일이 있으면 이미지들을 세로로 쭉 렌더링
             if image_files:
