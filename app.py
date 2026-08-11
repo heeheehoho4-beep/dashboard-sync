@@ -470,7 +470,15 @@ def render_dashboard():
         
         selected_companies = None
         if search_mode == "특정 보험사 선택 검색":
-            all_companies = [s for s in sheets.keys() if s != "notice"]
+            # 시스템 시트 및 불필요한 임시 시트 제외
+            system_sheets = ["notice", "requests", "system_assets"]
+            all_companies = [
+                s for s in sheets.keys() 
+                if s not in system_sheets 
+                and "GPT cache" not in s 
+                and not s.strip().startswith("시트") 
+                and not s.strip().startswith("Sheet")
+            ]
             selected_companies = st.multiselect(
                 "검색할 보험사를 선택하세요", 
                 options=all_companies, 
