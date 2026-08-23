@@ -598,7 +598,8 @@ def render_dashboard():
                     # 데스크톱에서는 이미지가 너무 커지지 않게 중앙 정렬 및 너비 제한
                     img_col1, img_col2, img_col3 = st.columns([1, 3, 1])
                     with img_col2:
-                        st.image(img_path, use_container_width=True)
+                        with open(img_path, "rb") as f:
+                            st.image(f.read(), use_container_width=True)
                     st.markdown("<br>", unsafe_allow_html=True)
             
             # 이미지가 없고 PDF만 있으면 기존의 iframe 미리보기 (로컬 환경 등 보이는 환경을 위해)
