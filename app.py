@@ -562,7 +562,7 @@ def render_dashboard():
         # 이미지 파일들 찾기 (schedule 로 시작하는 png, jpg, jpeg)
         image_files = []
         for ext in ('*.png', '*.jpg', '*.jpeg'):
-            image_files.extend(glob.glob(os.path.join("assets", f"schedule{ext}")))
+            image_files.extend(glob.glob(os.path.join("assets", f"schedule*{ext}")))
         image_files.sort()  # 이름순 정렬 (schedule1.jpg, schedule2.jpg ...)
         
         if has_pdf or image_files:
