@@ -216,75 +216,86 @@ def load_excel_data(path: str):
 # ─────────────────────────────────────────────────────────────
 @st.cache_data(ttl=CACHE_TTL, show_spinner=False)
 def load_gsheets_data():
-    """클라우드 환경에서 구글 스프레드시트 데이터를 로드합니다."""
-    try:
-        import gspread
-        from google.oauth2.service_account import Credentials
-        
-        # Streamlit secrets에서 가져오기 (dict 형태)
-        if "gcp_service_account" not in st.secrets:
-            return None, "Streamlit Secrets에 gcp_service_account가 설정되지 않았습니다."
+    """클라우드 환경에서 구글 스프레드시트 데이터를 로드합니다. (503 오류 자동 재시도 포함)"""
+    import time
+    
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            import gspread
+            from google.oauth2.service_account import Credentials
             
-        creds_dict = dict(st.secrets["gcp_service_account"])
-        
-        # TOML 파싱 중 \n 이 이스케이프 문자 그대로 들어간 경우를 위한 안전 장치
-        if "private_key" in creds_dict:
-            creds_dict["private_key"] = creds_dict["private_key"].replace('\\n', '\n')
-            
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive"
-        ]
-        credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-        client = gspread.authorize(credentials)
-        
-        spreadsheet_url = "https://docs.google.com/spreadsheets/d/1jWwDgw0rEGeb0R4_d1UsfOnXsfwbOjtu9BBiPTZ16p0/edit?gid=0#gid=0"
-        sh = client.open_by_url(spreadsheet_url)
-        
-        sheets = {}
-        all_worksheets = sh.worksheets()
-        
-        # 가져올 시트 이름 목록 구성 (에셋 시트 포함, 제외 시트 제외)
-        target_sheets = [ws.title for ws in all_worksheets if ws.title == "system_assets" or ws.title not in EXCLUDE_SHEETS]
-        
-        if target_sheets:
-            # 단 1번의 API 호출로 모든 시트의 데이터를 싹 가져옴 (Quota Exceeded 방지)
-            batch_data = sh.values_batch_get(target_sheets)
-            
-            for i, sheet_name in enumerate(target_sheets):
-                range_data = batch_data['valueRanges'][i]
-                data = range_data.get('values', [])
+            # Streamlit secrets에서 가져오기 (dict 형태)
+            if "gcp_service_account" not in st.secrets:
+                return None, "Streamlit Secrets에 gcp_service_account가 설정되지 않았습니다."
                 
-                if sheet_name == "system_assets":
-                    if data:
-                        import base64
-                        import glob
-                        os.makedirs("assets", exist_ok=True)
-                        
-                        # 기존 캐시된 schedule 파일들 먼저 삭제
-                        for old_file in glob.glob(os.path.join("assets", "schedule*")):
-                            try: os.remove(old_file)
-                            except: pass
+            creds_dict = dict(st.secrets["gcp_service_account"])
+            
+            # TOML 파싱 중 \n 이 이스케이프 문자 그대로 들어간 경우를 위한 안전 장치
+            if "private_key" in creds_dict:
+                creds_dict["private_key"] = creds_dict["private_key"].replace('\\n', '\n')
+                
+            scopes = [
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive"
+            ]
+            credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+            client = gspread.authorize(credentials)
+            
+            spreadsheet_url = "https://docs.google.com/spreadsheets/d/1jWwDgw0rEGeb0R4_d1UsfOnXsfwbOjtu9BBiPTZ16p0/edit?gid=0#gid=0"
+            sh = client.open_by_url(spreadsheet_url)
+            
+            sheets = {}
+            all_worksheets = sh.worksheets()
+            
+            # 가져올 시트 이름 목록 구성 (에셋 시트 포함, 제외 시트 제외)
+            target_sheets = [ws.title for ws in all_worksheets if ws.title == "system_assets" or ws.title not in EXCLUDE_SHEETS]
+            
+            if target_sheets:
+                # 단 1번의 API 호출로 모든 시트의 데이터를 싹 가져옴 (Quota Exceeded 방지)
+                batch_data = sh.values_batch_get(target_sheets)
+                
+                for i, sheet_name in enumerate(target_sheets):
+                    range_data = batch_data['valueRanges'][i]
+                    data = range_data.get('values', [])
+                    
+                    if sheet_name == "system_assets":
+                        if data:
+                            import base64
+                            import glob
+                            os.makedirs("assets", exist_ok=True)
                             
-                        for row in data:
-                            if not row or not row[0]: continue
-                            fname = row[0]
-                            b64_str = "".join([chunk for chunk in row[1:] if chunk])
-                            try:
-                                with open(os.path.join("assets", fname), "wb") as f:
-                                    f.write(base64.b64decode(b64_str))
-                            except Exception as e:
-                                print(f"Error decoding asset {fname}: {e}")
-                else:
-                    if data:
-                        sheets[sheet_name] = pd.DataFrame(data)
+                            # 기존 캐시된 schedule 파일들 먼저 삭제
+                            for old_file in glob.glob(os.path.join("assets", "schedule*")):
+                                try: os.remove(old_file)
+                                except: pass
+                                
+                            for row in data:
+                                if not row or not row[0]: continue
+                                fname = row[0]
+                                b64_str = "".join([chunk for chunk in row[1:] if chunk])
+                                try:
+                                    with open(os.path.join("assets", fname), "wb") as f:
+                                        f.write(base64.b64decode(b64_str))
+                                except Exception as e:
+                                    print(f"Error decoding asset {fname}: {e}")
                     else:
-                        sheets[sheet_name] = pd.DataFrame()
-                        
-        return sheets, None
-    except Exception as e:
-        import traceback
-        return None, f"구글 시트 읽기 오류: {e}\n{traceback.format_exc()}"
+                        if data:
+                            sheets[sheet_name] = pd.DataFrame(data)
+                        else:
+                            sheets[sheet_name] = pd.DataFrame()
+                            
+            return sheets, None
+        
+        except Exception as e:
+            error_str = str(e)
+            # 503 등 일시적 오류면 재시도
+            if attempt < max_retries - 1 and ("503" in error_str or "unavailable" in error_str.lower() or "timeout" in error_str.lower()):
+                wait_sec = (attempt + 1) * 3  # 3초, 6초 간격으로 재시도
+                time.sleep(wait_sec)
+                continue
+            import traceback
+            return None, f"구글 시트 읽기 오류: {e}\n{traceback.format_exc()}"
 
 
 
