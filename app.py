@@ -579,7 +579,7 @@ def render_dashboard():
         if has_pdf or image_files:
             col_t, col_b = st.columns([4, 1])
             with col_t:
-                st.markdown("### 📎 당월 위촉일정 안내")
+                st.markdown("### 📎 당월 위촉일정 안내 <span style='font-size: 14px; color: #666; font-weight: normal; margin-left: 10px;'>(익월일정은 매월 24일경 오픈됩니다)</span>", unsafe_allow_html=True)
                 if has_pdf and not image_files:
                     st.info("💡 클라우드 환경에서는 브라우저 보안 정책으로 인해 PDF 미리보기가 보이지 않을 수 있습니다. 우측 상단의 **[📥 PDF 다운로드]** 버튼을 눌러 확인해 주세요.")
             
